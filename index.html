@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ambient Screensaver</title>
+<style>
+  /* Reset */
+  html,body {height:100%;margin:0;background:#05050a;overflow:hidden}
+  :root{
+    --bg1: 210 80% 10%;
+    --bg2: 260 60% 8%;
+    --accent1: 190 90% 60%;
+    --accent2: 290 85% 60%;
+    --accent3: 15 90% 60%;
+  }
+
+  /* full-bleed container */
+  .stage{
+    position:fixed;inset:0;display:block;
+    background: radial-gradient(1200px circle at 10% 20%, hsl(var(--bg1) / 0.15), transparent 20%),
+                radial-gradient(900px circle at 90% 80%, hsl(var(--bg2) / 0.12), transparent 25%),
+                #05050a;
+    backdrop-filter: blur(0.6px);
+  }
+
+  /* blob base */
+  .blob{
+    position:absolute;
+    width:40vmax;height:40vmax;
+    left:50%;top:50%;
+    transform:translate(-50%,-50%);
+    filter: blur(40px) saturate(120%);
+    border-radius: 45% 55% 60% 40% / 50% 40% 60% 50%;
+    mix-blend-mode: screen;
+    opacity:0.9;
+    animation: float var(--dur, 20s) linear infinite, morph var(--morphDur, 8s) ease-in-out infinite;
+  }
+
+  /* multiple blobs with different sizes & timings */
+  .b1{ --dur: 36s; --morphDur: 12s; width:48vmax;height:48vmax; left:18%; top:40%;
+       background: radial-gradient(closest-side, hsl(var(--accent1) / 0.9), transparent 45%),
+                   conic-gradient(from 120deg at 50% 50%, hsl(var(--accent2) / 0.5), hsl(var(--accent3) / 0.25));
+       animation-delay: -8s;
+  }
+  .b2{ --dur: 42s; --morphDur: 9s; width:36vmax;height:36vmax; left:70%; top:30%;
+       background: radial-gradient(closest-side, hsl(var(--accent2) / 0.92), transparent 46%),
+                   linear-gradient(120deg, hsl(var(--accent1) / 0.18), transparent 60%);
+       animation-delay: -12s;
+       mix-blend-mode: screen;
+  }
+  .b3{ --dur: 30s; --morphDur: 11s; width:30vmax;height:30vmax; left:60%; top:70%;
+       background: radial-gradient(closest-side, hsl(var(--accent3) / 0.95), transparent 46%),
+                   linear-gradient(220deg, hsl(var(--accent2) / 0.12), transparent 50%);
+       animation-delay: -5s;
+  }
+
+  /* smaller subtle orbs */
+  .orb{
+    position:absolute;border-radius:50%;
+    filter: blur(18px) saturate(120%);
+    mix-blend-mode: screen; opacity:0.85;
+    animation: drift 28s linear infinite;
+  }
+  .o1{ width:10vmax;height:10vmax; left:12%; top:12%;
+       background: radial-gradient(circle at 30% 30%, hsl(var(--accent2) / 0.95), transparent 60%); animation-delay:-6s; }
+  .o2{ width:8vmax;height:8vmax; left:82%; top:18%;
+       background: radial-gradient(circle at 40% 40%, hsl(var(--accent1) / 0.9), transparent 60%); animation-delay:-3s; }
+  .o3{ width:6vmax;height:6vmax; left:78%; top:82%;
+       background: radial-gradient(circle at 50% 50%, hsl(var(--accent3) / 0.98), transparent 60%); animation-delay:-2s; }
+
+  /* subtle grain using pseudo-element */
+  .stage::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.01) 1px, transparent 1px);
+    background-size: 3px 3px; opacity:0.6; mix-blend-mode: overlay;
+  }
+
+  /* animations */
+  @keyframes float{
+    0%{ transform: translate(-50%,-50%) translate3d(0,0,0) rotate(0deg) scale(1); }
+    25%{ transform: translate(-50%,-50%) translate3d(-6vmin,4vmin,0) rotate(8deg) scale(1.02); }
+    50%{ transform: translate(-50%,-50%) translate3d(0,8vmin,0) rotate(0deg) scale(0.98); }
+    75%{ transform: translate(-50%,-50%) translate3d(6vmin,-6vmin,0) rotate(-6deg) scale(1.01); }
+    100%{ transform: translate(-50%,-50%) translate3d(0,0,0) rotate(0deg) scale(1); }
+  }
+
+  @keyframes morph{
+    0%{ border-radius: 45% 55% 60% 40% / 50% 40% 60% 50%; }
+    25%{ border-radius: 60% 40% 50% 50% / 40% 60% 50% 50%; }
+    50%{ border-radius: 50% 60% 40% 50% / 60% 50% 40% 50%; }
+    75%{ border-radius: 55% 45% 60% 40% / 50% 60% 30% 60%; }
+    100%{ border-radius: 45% 55% 60% 40% / 50% 40% 60% 50%; }
+  }
+
+  @keyframes drift{
+    0%{ transform: translateY(0) translateX(0) scale(1) rotate(0deg) }
+    50%{ transform: translateY(-6vmin) translateX(4vmin) scale(1.05) rotate(8deg) }
+    100%{ transform: translateY(0) translateX(0) scale(1) rotate(0deg) }
+  }
+
+  /* Gentle subtle overlay wave using pseudo-element */
+  .stage::before{
+    content:"";position:absolute;inset:-20%;
+    background: conic-gradient(from 180deg at 50% 50%, rgba(255,255,255,0.02), transparent 30%, rgba(255,255,255,0.015));
+    transform: rotate(0deg); animation: slowspin 80s linear infinite;
+    pointer-events:none; mix-blend-mode: overlay;
+  }
+  @keyframes slowspin{ from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+
+  /* accessibility: reduce motion */
+  @media (prefers-reduced-motion: reduce) {
+    .blob, .orb, .stage::before { animation: none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="stage" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+
+    <div class="orb o1"></div>
+    <div class="orb o2"></div>
+    <div class="orb o3"></div>
+  </div>
+<script>
+  // subtle color cycling over long time
+  const root = document.documentElement;
+  let t = 0;
+  function step(){
+    t += 0.0015;
+    // cycle hues gently
+    const a1 = (190 + Math.sin(t*0.7)*20) | 0;
+    const a2 = (290 + Math.sin(t*0.5 + 1)*18) | 0;
+    const a3 = (15 + Math.sin(t*0.6 + 2)*14) | 0;
+    root.style.setProperty('--accent1', `${a1} 90% 60%`);
+    root.style.setProperty('--accent2', `${a2} 85% 60%`);
+    root.style.setProperty('--accent3', `${a3} 90% 60%`);
+    requestAnimationFrame(step);
+  }
+  // Start only if user does not prefer reduced motion
+  const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (!media.matches) requestAnimationFrame(step);
+</script>
+</body>
+</html>
